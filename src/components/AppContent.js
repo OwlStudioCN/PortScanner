@@ -37,9 +37,9 @@ const styles = theme => ({
   // [theme.breakpoints.down('sm')]: { //max 1280 px
   [theme.breakpoints.down('md')]: {
     // max 1280 px
-    root: {
-      overflow: 'hidden', // ps fix minus margin in children
-    },
+    // root: {
+    //   overflowX: 'hidden', // ps fix minus margin in children
+    // },
   },
 
   [theme.breakpoints.up('md')]: {

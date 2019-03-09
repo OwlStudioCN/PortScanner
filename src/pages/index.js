@@ -14,6 +14,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/es/ListItemText/ListItemText';
 import ListItemIcon from '@material-ui/core/es/ListItemIcon';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Paper from '@material-ui/core/Paper';
 import HeadLine from '../components/HeadLine';
 import AppContent from '../components/AppContent';
 import withRoot from '../withRoot';
@@ -52,12 +53,11 @@ const styles = theme => ({
 
 class Index extends React.Component {
   state = {
-    open: false,
     host: '127.0.0.1',
     start: 1000,
     end: 10000,
     timeout: 500,
-    result: [],
+    openPorts: [],
     loading: false,
   };
 
@@ -71,15 +71,15 @@ class Index extends React.Component {
       });
 
       socket.connect(port, host, () => {
-        console.log(`OPEN: ${port}`);
-        this.setState(state => ({ result: [...state.result, port] }));
+        console.info(`OPEN: ${port}`);
+        this.setState(state => ({ openPorts: [...state.openPorts, port] }));
         // we don't destroy the socket cos we want to listen to data event
         // the socket will self-destruct in [timeout] secs cos of the timeout we set, so no worries
       });
 
       // if any data is written to the client on connection, show it
       socket.on('data', data => {
-        // console.log('Data in ' + port + ': ' + data);
+        console.log('Data in ' + port + ': ' + data);
         socket.destroy();
       });
 
@@ -90,14 +90,16 @@ class Index extends React.Component {
     }).catch(console.info);
 
   scan = async (host, start, end, timeout) => {
-    if (start > end) {
-      [end, start] = [start, end];
-    }
+    const startTime = Date.now();
+    // eslint-disable-next-line no-param-reassign
+    if (start > end) [end, start] = [start, end];
 
+    // eslint-disable-next-line no-param-reassign
     end = Math.min(end, 65535);
+    // eslint-disable-next-line no-param-reassign
     start = Math.max(1, start);
 
-    console.log('HOST:', host, start, end, timeout);
+    console.info('HOST:', host, start, end, timeout);
     const ports = [];
     for (let i = start; i <= end; i++) ports.push(i);
     // Promise.all(ports.map(port => analyzePort(host, port, timeout))).catch(console.error);
@@ -106,10 +108,10 @@ class Index extends React.Component {
     })
       .catch(e => {
         this.setState(state => ({ success: false, loading: false }));
-        console.log('ERROR:', e);
+        console.info('ERROR:', e);
       })
       .finally(() => {
-        console.log('finally');
+        console.info(`${`Time: ${Date.now()}` - startTime} ms`);
         this.setState(state => ({ success: true, loading: false }));
       }); // <---- at most 10 http requests at a time
   };
@@ -119,7 +121,7 @@ class Index extends React.Component {
       state => ({
         loading: true,
         success: false,
-        result: [],
+        openPorts: [],
       }),
       () => {
         const { host, start, end } = this.state;
@@ -132,33 +134,22 @@ class Index extends React.Component {
     this.setState({ [name]: event.target.value });
   };
 
-  handleClose = () => {
-    this.setState({
-      open: false,
-    });
-  };
-
-  handleClick = () => {
-    this.setState({
-      open: true,
-    });
-  };
-
   render() {
     const { classes } = this.props;
-    const { result, loading, success } = this.state;
+    const { openPorts, loading, success } = this.state;
     const buttonClassname = classNames({
       [classes.buttonSuccess]: success,
     });
 
     return (
       <AppContent>
-        <h1>Port Scanner</h1>
-        <HeadLine
-          color={purple[500]}
-          style={{ marginBottom: 16, marginTop: -8 }}
-        />
-        <div>
+        <div id={'header'}>
+          <h1>Port Scanner</h1>
+          <HeadLine
+            color={purple[500]}
+            style={{ marginBottom: 16, marginTop: -8 }}
+          />
+
           <Grid container spacing={24}>
             <Grid item xs={12} sm={6} md={3}>
               <TextField
@@ -222,18 +213,11 @@ class Index extends React.Component {
             </Grid>
           </Grid>
         </div>
-
-        {/* { */}
-        {/* this.state.loading ? */}
-        {/* <LinearProgress /> : */}
-        {/* <div> */}
-        {/* {this.state.done && 'Done!!'} */}
-        {/* </div> */}
-        {/* } */}
-        <div>
-          {result.length > 0 && result.sort((a, b) => a - b) && (
-            <List>
-              {result.map(port => (
+        <Paper style={{ marginTop: 24 }} elevation={1}>
+          {[openPorts].length > 0 && openPorts.sort((a, b) => a - b) && (
+            <List style={{ maxHeight: '60vh', overflow: 'scroll' }}>
+              {/* {openPorts.map(port => ( */}
+              {[...new Array(100)].map(port => (
                 <ListItem key={port} button>
                   <ListItemIcon>
                     <Done color="secondary" />
@@ -243,7 +227,7 @@ class Index extends React.Component {
               ))}
             </List>
           )}
-        </div>
+        </Paper>
       </AppContent>
     );
   }
