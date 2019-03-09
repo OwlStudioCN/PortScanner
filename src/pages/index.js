@@ -4,7 +4,10 @@ import PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
-import Done from '@material-ui/icons/Done';
+import Open from '@material-ui/icons/Done';
+import Error from '@material-ui/icons/Error';
+import Timeout from '@material-ui/icons/Timelapse';
+import Close from '@material-ui/icons/Close';
 import classNames from 'classnames';
 
 import Promise from 'bluebird';
@@ -26,7 +29,16 @@ Promise.config({
 });
 
 const net = window.require('net');
-
+const throttle = (fn, delay) => {
+  let lastCalled = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastCalled >= delay) {
+      fn(...args);
+      lastCalled = now;
+    }
+  };
+};
 const styles = theme => ({
   root: {
     // textAlign: 'center',
@@ -61,26 +73,38 @@ const TIMEOUT = 1000;
 class Index extends React.Component {
   constructor(props) {
     super(props);
+    // this.timeoutPorts = [];
+    // this.closePorts = [];
+    // this.errorPorts = [];
     this.state = {
       host: '127.0.0.1',
       start: 1,
-      end: 10000,
+      end: 5000,
       openPorts: [],
-      timeoutPorts: [],
 
       loading: false,
       concurrency: 4000,
-
+      progress: 0,
       snackbarOpen: false,
     };
   }
 
+  setProgress = throttle(() => {
+    console.log(this.cnt);
+    this.setState({ progress: (this.cnt / this.sum) * 100 });
+  }, 100);
+
   analyzePort = (host, port = 8080) =>
     new Promise(resolve => {
+      this.cnt += 1;
+      this.setProgress();
       const socket = new net.Socket();
       socket.setTimeout(TIMEOUT, () => {
         // console.log('timeout...');
+
+        // this.timeoutPorts.push(port);
         socket.destroy();
+
         resolve();
       });
 
@@ -118,6 +142,9 @@ class Index extends React.Component {
     // eslint-disable-next-line no-param-reassign
     start = Math.max(1, start);
 
+    this.sum = end - start + 1;
+    this.cnt = 0;
+
     console.info(
       'HOST:',
       host,
@@ -143,8 +170,18 @@ class Index extends React.Component {
       })
       .finally(() => {
         console.timeEnd('Scan Time');
-        this.setState(state => ({ success: true, loading: false }));
+        this.setState(state => ({
+          success: true,
+          loading: false,
+          progress: '100',
+        }));
       }); // <---- at most 10 http requests at a time
+  };
+
+  reset = () => {
+    // this.errorPorts = [];
+    // this.closePorts = [];
+    // this.timeoutPorts = [];
   };
 
   handleScanClick = () => {
@@ -152,6 +189,7 @@ class Index extends React.Component {
       this.handleSnackbarOpen();
       return;
     }
+    this.reset();
 
     this.setState(
       state => ({
@@ -197,7 +235,6 @@ class Index extends React.Component {
     const buttonClassname = classNames({
       [classes.buttonSuccess]: success,
     });
-
     return (
       <AppContent>
         <SimpleSnackbar
@@ -292,6 +329,7 @@ class Index extends React.Component {
             </Grid>
           </Grid>
         </div>
+        <div>{this.state.progress + '%'}</div>
         {openPorts.length > 0 &&
           // && openPorts.sort((a, b) => a - b)
           !this.state.loading && (
@@ -303,11 +341,41 @@ class Index extends React.Component {
                 {openPorts.map(port => (
                   <ListItem key={port} button>
                     <ListItemIcon>
-                      <Done color="secondary" />
+                      <Open color="secondary" />
                     </ListItemIcon>
-                    <ListItemText primary={`${this.state.host}:${port}`} />
+                    <ListItemText primary={`${this.state.host}:${port} Open`} />
                   </ListItem>
                 ))}
+                {/* {closePorts.map(port => ( */}
+                {/* <ListItem key={port} button> */}
+                {/* <ListItemIcon> */}
+                {/* <Close /> */}
+                {/* </ListItemIcon> */}
+                {/* <ListItemText */}
+                {/* primary={`${this.state.host}:${port} Closed`} */}
+                {/* /> */}
+                {/* </ListItem> */}
+                {/* ))} */}
+                {/* {timeoutPorts.map(port => ( */}
+                {/* <ListItem key={port} button> */}
+                {/* <ListItemIcon> */}
+                {/* <Timeout /> */}
+                {/* </ListItemIcon> */}
+                {/* <ListItemText */}
+                {/* primary={`${this.state.host}:${port} TIMEOUT`} */}
+                {/* /> */}
+                {/* </ListItem> */}
+                {/* ))} */}
+                {/* {errorPorts.map(port => ( */}
+                {/* <ListItem key={port} button> */}
+                {/* <ListItemIcon> */}
+                {/* <Error /> */}
+                {/* </ListItemIcon> */}
+                {/* <ListItemText */}
+                {/* primary={`${this.state.host}:${port} ERROR`} */}
+                {/* /> */}
+                {/* </ListItem> */}
+                {/* ))} */}
               </List>
             </Paper>
           )}
