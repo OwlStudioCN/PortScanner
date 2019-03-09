@@ -6,10 +6,7 @@ import TextField from '@material-ui/core/TextField';
 import Done from '@material-ui/icons/Done';
 import classNames from 'classnames';
 
-import withRoot from '../withRoot';
 import Promise from 'bluebird';
-import AppContent from '../components/AppContent';
-import HeadLine from '../components/HeadLine';
 import Grid from '@material-ui/core/Grid';
 import { green, purple } from '@material-ui/core/colors';
 import List from '@material-ui/core/List';
@@ -17,6 +14,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/es/ListItemText/ListItemText';
 import ListItemIcon from '@material-ui/core/es/ListItemIcon';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import HeadLine from '../components/HeadLine';
+import AppContent from '../components/AppContent';
+import withRoot from '../withRoot';
 
 const net = window.require('net');
 
@@ -71,7 +71,7 @@ class Index extends React.Component {
       });
 
       socket.connect(port, host, () => {
-        console.log('OPEN: ' + port);
+        console.log(`OPEN: ${port}`);
         this.setState(state => ({ result: [...state.result, port] }));
         // we don't destroy the socket cos we want to listen to data event
         // the socket will self-destruct in [timeout] secs cos of the timeout we set, so no worries
@@ -217,19 +217,19 @@ class Index extends React.Component {
                   />
                 )}
               </div>
-              {/*<Button onClick={this.handleScanClick} variant="outlined" color="secondary"*/}
-              {/*style={{ width: '100%' }}>Scan</Button>*/}
+              {/* <Button onClick={this.handleScanClick} variant="outlined" color="secondary" */}
+              {/* style={{ width: '100%' }}>Scan</Button> */}
             </Grid>
           </Grid>
         </div>
 
-        {/*{*/}
-        {/*this.state.loading ?*/}
-        {/*<LinearProgress /> :*/}
-        {/*<div>*/}
-        {/*{this.state.done && 'Done!!'}*/}
-        {/*</div>*/}
-        {/*}*/}
+        {/* { */}
+        {/* this.state.loading ? */}
+        {/* <LinearProgress /> : */}
+        {/* <div> */}
+        {/* {this.state.done && 'Done!!'} */}
+        {/* </div> */}
+        {/* } */}
         <div>
           {result.length > 0 && result.sort((a, b) => a - b) && (
             <List>

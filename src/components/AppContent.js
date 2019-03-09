@@ -25,7 +25,6 @@ const styles = theme => ({
     },
   },
   root: theme.mixins.gutters({
-
     display: 'flex',
     flexDirection: 'column',
     paddingTop: 8,

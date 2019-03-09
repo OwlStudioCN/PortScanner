@@ -23,7 +23,15 @@
     "prettier": "^1.16.4",
     "pretty-quick": "^1.10.0",
     "typescript": "^3.3.3333",
-    "wait-on": "3.2.0"
+    "wait-on": "3.2.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.15.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.12.4"
   },
   "main": "main.js",
   "scripts": {
@@ -34,7 +42,10 @@
     "electron-build": "electron-builder",
     "release": "yarn react-build && electron-builder --publish=always",
     "build": "yarn react-build && yarn electron-build",
-    "start": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\""
+    "start": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\"",
+    "lint-js": "eslint --ignore-path .gitignore --ignore-pattern \"!**/.*\" .",
+    "lint-js-errors": "eslint --ignore-path .gitignore --ignore-pattern \"!**/.*\" . --quiet",
+    "fix-js": "yarn run lint-js --fix"
   },
   "browserslist": [
     ">0.2%",

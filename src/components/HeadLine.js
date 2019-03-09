@@ -20,10 +20,12 @@ const HeadLine = ({ classes, color, style }) => (
     }}
   />
 );
+
 HeadLine.defaultProps = {
   color: null,
   style: {},
 };
+
 HeadLine.propTypes = {
   classes: PropTypes.object.isRequired,
   color: PropTypes.string,
