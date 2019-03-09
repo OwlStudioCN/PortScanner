@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 const styles = theme => ({
   '@global': {
     html: {
+      WebkitAppRegion: 'drag',
       fontFamily: 'Roboto, Noto Sans CJK TC Light, -apple-system, sans-serif',
       backgroundColor: theme.palette.background.paper,
       WebkitFontSmoothing: 'antialiased', // Antialiasing.

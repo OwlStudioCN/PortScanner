@@ -13,7 +13,11 @@ let mainWindow;
 // });
 
 function createWindow() {
-  mainWindow = new BrowserWindow({ width: 900, height: 680 });
+  mainWindow = new BrowserWindow({
+    width: 900,
+    height: 680,
+    titleBarStyle: 'hidden',
+  });
   mainWindow.loadURL(
     isDev
       ? 'http://localhost:3000'
