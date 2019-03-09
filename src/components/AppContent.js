@@ -29,7 +29,7 @@ const styles = theme => ({
     display: 'flex',
     maxHeight: '100vh',
     flexDirection: 'column',
-    paddingTop: 8,
+    paddingTop: 16,
     flex: '1 1 100%',
     maxWidth: '100%',
     margin: '0 auto',
