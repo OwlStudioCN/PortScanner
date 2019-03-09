@@ -175,6 +175,17 @@ class Index extends React.Component {
 
     return (
       <AppContent>
+        <div
+          style={{
+            WebkitAppRegion: 'drag',
+            position: 'absolute',
+            height: 40,
+            top: 0,
+            left: 0,
+            right: 0,
+            // backgroundColor: '#ccc',
+          }}
+        />
         <div>
           <h1 style={{ fontFamily: 'Product Sans', fontWeight: 500 }}>
             Port Scanner
@@ -252,7 +263,7 @@ class Index extends React.Component {
           // && openPorts.sort((a, b) => a - b)
           !this.state.loading && (
             <Paper
-              style={{ overflow: 'scroll', marginBottom: 24, marginTop: 24 }}
+              style={{ overflow: 'auto', marginBottom: 24, marginTop: 24 }}
               elevation={1}
             >
               <List>

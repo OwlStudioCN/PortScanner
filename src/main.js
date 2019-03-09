@@ -14,6 +14,8 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
+    minHeight: 600,
+    minWidth: 500,
     width: 900,
     height: 680,
     titleBarStyle: 'hiddenInset',
