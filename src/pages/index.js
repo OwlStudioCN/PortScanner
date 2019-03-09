@@ -1,12 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Done from '@material-ui/icons/Done';
@@ -17,9 +11,7 @@ import Promise from 'bluebird';
 import AppContent from '../components/AppContent';
 import HeadLine from '../components/HeadLine';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
 import { green, purple } from '@material-ui/core/colors';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/es/ListItemText/ListItemText';
@@ -105,7 +97,7 @@ class Index extends React.Component {
     end = Math.min(end, 65535);
     start = Math.max(1, start);
 
-    console.log("HOST:", host, start, end, timeout);
+    console.log('HOST:', host, start, end, timeout);
     const ports = [];
     for (let i = start; i <= end; i++) ports.push(i);
     // Promise.all(ports.map(port => analyzePort(host, port, timeout))).catch(console.error);
@@ -244,7 +236,7 @@ class Index extends React.Component {
               {result.map(port => (
                 <ListItem key={port} button>
                   <ListItemIcon>
-                    <Done color='secondary' />
+                    <Done color="secondary" />
                   </ListItemIcon>
                   <ListItemText primary={`${this.state.host}:${port}`} />
                 </ListItem>
@@ -252,7 +244,6 @@ class Index extends React.Component {
             </List>
           )}
         </div>
-
       </AppContent>
     );
   }
