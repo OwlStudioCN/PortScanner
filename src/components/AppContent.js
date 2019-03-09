@@ -26,12 +26,12 @@ const styles = theme => ({
   },
   root: theme.mixins.gutters({
     display: 'flex',
+    maxHeight: '100vh',
     flexDirection: 'column',
     paddingTop: 8,
     flex: '1 1 100%',
     maxWidth: '100%',
     margin: '0 auto',
-    marginBottom: 32,
     // transition: theme.transitions.create('max-width'),
   }),
   // [theme.breakpoints.down('sm')]: { //max 1280 px
@@ -54,7 +54,7 @@ function AppContent(props) {
 
   return (
     <div className={classNames(classes.root, className)} {...other}>
-      <main style={{ flex: 1 }}>{children}</main>
+      {children}
     </div>
   );
 }

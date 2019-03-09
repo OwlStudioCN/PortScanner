@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
@@ -18,6 +19,10 @@ import Paper from '@material-ui/core/Paper';
 import HeadLine from '../components/HeadLine';
 import AppContent from '../components/AppContent';
 import withRoot from '../withRoot';
+
+Promise.config({
+  cancellation: true,
+});
 
 const net = window.require('net');
 
@@ -50,28 +55,34 @@ const styles = theme => ({
     color: theme.palette.text.secondary,
   },
 });
+const TIMEOUT = 1000;
 
 class Index extends React.Component {
-  state = {
-    host: '127.0.0.1',
-    start: 1000,
-    end: 10000,
-    timeout: 500,
-    openPorts: [],
-    loading: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      host: '127.0.0.1',
+      start: 1,
+      end: 10000,
+      openPorts: [],
+      timeoutPorts: [],
 
-  analyzePort = (host, port = 8080, timeout = 2000) =>
+      loading: false,
+      concurrency: 4000,
+    };
+  }
+
+  analyzePort = (host, port = 8080) =>
     new Promise(resolve => {
       const socket = new net.Socket();
-      socket.setTimeout(timeout, () => {
+      socket.setTimeout(TIMEOUT, () => {
         // console.log('timeout...');
         socket.destroy();
         resolve();
       });
 
       socket.connect(port, host, () => {
-        console.info(`OPEN: ${port}`);
+        // console.info(`OPEN: ${port}`);
         this.setState(state => ({ openPorts: [...state.openPorts, port] }));
         // we don't destroy the socket cos we want to listen to data event
         // the socket will self-destruct in [timeout] secs cos of the timeout we set, so no worries
@@ -79,7 +90,7 @@ class Index extends React.Component {
 
       // if any data is written to the client on connection, show it
       socket.on('data', data => {
-        console.log('Data in ' + port + ': ' + data);
+        // console.log(`Data in ${port}: ${data}`);
         socket.destroy();
       });
 
@@ -87,10 +98,15 @@ class Index extends React.Component {
         // console.log('ERROR: ', e.message);
         socket.destroy();
       });
+
+      socket.on('close', () => {
+        // console.log(`Closed: ${port}`);
+        socket.destroy();
+      });
     }).catch(console.info);
 
-  scan = async (host, start, end, timeout) => {
-    const startTime = Date.now();
+  scan = async (host, start, end) => {
+    console.time('Scan Time');
     // eslint-disable-next-line no-param-reassign
     if (start > end) [end, start] = [start, end];
 
@@ -99,19 +115,31 @@ class Index extends React.Component {
     // eslint-disable-next-line no-param-reassign
     start = Math.max(1, start);
 
-    console.info('HOST:', host, start, end, timeout);
+    console.info(
+      'HOST:',
+      host,
+      'Start:',
+      start,
+      'End',
+      end,
+      'Timeout:',
+      TIMEOUT,
+      'Concurrency:',
+      this.state.concurrency,
+    );
     const ports = [];
     for (let i = start; i <= end; i++) ports.push(i);
-    // Promise.all(ports.map(port => analyzePort(host, port, timeout))).catch(console.error);
-    await Promise.map(ports, port => this.analyzePort(host, port, timeout), {
-      concurrency: 2000,
+    // Promise.all(ports.map(port => analyzePort(host, port, TIMEOUT))).catch(console.error);
+
+    await Promise.map(ports, port => this.analyzePort(host, port, TIMEOUT), {
+      concurrency: this.state.concurrency,
     })
       .catch(e => {
         this.setState(state => ({ success: false, loading: false }));
         console.info('ERROR:', e);
       })
       .finally(() => {
-        console.info(`${`Time: ${Date.now()}` - startTime} ms`);
+        console.timeEnd('Scan Time');
         this.setState(state => ({ success: true, loading: false }));
       }); // <---- at most 10 http requests at a time
   };
@@ -131,7 +159,11 @@ class Index extends React.Component {
   };
 
   handleChange = name => event => {
-    this.setState({ [name]: event.target.value });
+    let { value } = event.target;
+    if (name !== 'host') {
+      value = +value;
+    }
+    this.setState({ [name]: value });
   };
 
   render() {
@@ -143,8 +175,10 @@ class Index extends React.Component {
 
     return (
       <AppContent>
-        <div id={'header'}>
-          <h1>Port Scanner</h1>
+        <div>
+          <h1 style={{ fontFamily: 'Product Sans', fontWeight: 500 }}>
+            Port Scanner
+          </h1>
           <HeadLine
             color={purple[500]}
             style={{ marginBottom: 16, marginTop: -8 }}
@@ -165,6 +199,7 @@ class Index extends React.Component {
               <TextField
                 id="standard-name"
                 label="Start"
+                type="number"
                 className={classes.textField}
                 value={this.state.start}
                 onChange={this.handleChange('start')}
@@ -175,6 +210,7 @@ class Index extends React.Component {
               <TextField
                 id="standard-name"
                 label="End"
+                type="number"
                 className={classes.textField}
                 value={this.state.end}
                 onChange={this.handleChange('end')}
@@ -184,9 +220,10 @@ class Index extends React.Component {
               <TextField
                 id="standard-name"
                 label="Concurrency"
+                type="number"
                 className={classes.textField}
-                value={this.state.end}
-                onChange={this.handleChange('end')}
+                value={this.state.concurrency}
+                onChange={this.handleChange('concurrency')}
               />
             </Grid>
             <Grid item xs={12}>
@@ -208,26 +245,28 @@ class Index extends React.Component {
                   />
                 )}
               </div>
-              {/* <Button onClick={this.handleScanClick} variant="outlined" color="secondary" */}
-              {/* style={{ width: '100%' }}>Scan</Button> */}
             </Grid>
           </Grid>
         </div>
-        <Paper style={{ marginTop: 24 }} elevation={1}>
-          {[openPorts].length > 0 && openPorts.sort((a, b) => a - b) && (
-            <List style={{ maxHeight: '60vh', overflow: 'scroll' }}>
-              {/* {openPorts.map(port => ( */}
-              {[...new Array(100)].map(port => (
-                <ListItem key={port} button>
-                  <ListItemIcon>
-                    <Done color="secondary" />
-                  </ListItemIcon>
-                  <ListItemText primary={`${this.state.host}:${port}`} />
-                </ListItem>
-              ))}
-            </List>
+        {openPorts.length > 0 &&
+          // && openPorts.sort((a, b) => a - b)
+          !this.state.loading && (
+            <Paper
+              style={{ overflow: 'scroll', marginBottom: 24, marginTop: 24 }}
+              elevation={1}
+            >
+              <List>
+                {openPorts.map(port => (
+                  <ListItem key={port} button>
+                    <ListItemIcon>
+                      <Done color="secondary" />
+                    </ListItemIcon>
+                    <ListItemText primary={`${this.state.host}:${port}`} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
           )}
-        </Paper>
       </AppContent>
     );
   }
