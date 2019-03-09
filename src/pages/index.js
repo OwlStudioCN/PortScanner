@@ -19,6 +19,7 @@ import Paper from '@material-ui/core/Paper';
 import HeadLine from '../components/HeadLine';
 import AppContent from '../components/AppContent';
 import withRoot from '../withRoot';
+import SimpleSnackbar from '../components/SimpleSnackbar';
 
 Promise.config({
   cancellation: true,
@@ -69,6 +70,8 @@ class Index extends React.Component {
 
       loading: false,
       concurrency: 4000,
+
+      snackbarOpen: false,
     };
   }
 
@@ -145,6 +148,11 @@ class Index extends React.Component {
   };
 
   handleScanClick = () => {
+    if (!this.validate()) {
+      this.handleSnackbarOpen();
+      return;
+    }
+
     this.setState(
       state => ({
         loading: true,
@@ -158,12 +166,29 @@ class Index extends React.Component {
     );
   };
 
+  validate = () => {
+    const { host } = this.state;
+    return net.isIP(host);
+  };
+
   handleChange = name => event => {
     let { value } = event.target;
     if (name !== 'host') {
       value = +value;
     }
     this.setState({ [name]: value });
+  };
+
+  handleSnackbarOpen = () => {
+    this.setState({ snackbarOpen: true });
+  };
+
+  handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    this.setState({ snackbarOpen: false });
   };
 
   render() {
@@ -175,6 +200,11 @@ class Index extends React.Component {
 
     return (
       <AppContent>
+        <SimpleSnackbar
+          open={this.state.snackbarOpen}
+          handleClose={this.handleSnackbarClose}
+          msg="Invalid Input!"
+        />
         <div
           style={{
             WebkitAppRegion: 'drag',
@@ -187,7 +217,12 @@ class Index extends React.Component {
           }}
         />
         <div>
-          <h1 style={{ fontFamily: 'Product Sans', fontWeight: 500 }}>
+          <h1
+            style={{
+              fontFamily: 'Product Sans, Roboto, sans-serif',
+              fontWeight: 500,
+            }}
+          >
             Port Scanner
           </h1>
           <HeadLine
@@ -203,7 +238,6 @@ class Index extends React.Component {
                 className={classes.textField}
                 value={this.state.host}
                 onChange={this.handleChange('host')}
-                // margin="normal"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -214,7 +248,6 @@ class Index extends React.Component {
                 className={classes.textField}
                 value={this.state.start}
                 onChange={this.handleChange('start')}
-                // margin="normal"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
