@@ -5,11 +5,10 @@ import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Open from '@material-ui/icons/Done';
-import Error from '@material-ui/icons/Error';
-import Timeout from '@material-ui/icons/Timelapse';
-import Close from '@material-ui/icons/Close';
+// import Error from '@material-ui/icons/Error';
+// import Timeout from '@material-ui/icons/Timelapse';
+// import Close from '@material-ui/icons/Close';
 import classNames from 'classnames';
-
 import Promise from 'bluebird';
 import Grid from '@material-ui/core/Grid';
 import { green, purple } from '@material-ui/core/colors';
@@ -19,6 +18,8 @@ import ListItemText from '@material-ui/core/es/ListItemText/ListItemText';
 import ListItemIcon from '@material-ui/core/es/ListItemIcon';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import LinearDeterminate from '../components/Progress';
 import HeadLine from '../components/HeadLine';
 import AppContent from '../components/AppContent';
 import withRoot from '../withRoot';
@@ -40,11 +41,6 @@ const throttle = (fn, delay) => {
   };
 };
 const styles = theme => ({
-  root: {
-    // textAlign: 'center',
-    // paddingTop: theme.spacing.unit * 20,
-    fontFamily: 'Roboto Mono,sans-serif',
-  },
   buttonWrapper: {
     position: 'relative',
   },
@@ -68,18 +64,16 @@ const styles = theme => ({
     color: theme.palette.text.secondary,
   },
 });
+
 const TIMEOUT = 1000;
 
 class Index extends React.Component {
   constructor(props) {
     super(props);
-    // this.timeoutPorts = [];
-    // this.closePorts = [];
-    // this.errorPorts = [];
     this.state = {
       host: '127.0.0.1',
-      start: 1,
-      end: 5000,
+      start: 3000,
+      end: 8000,
       openPorts: [],
 
       loading: false,
@@ -92,12 +86,13 @@ class Index extends React.Component {
   setProgress = throttle(() => {
     console.log(this.cnt);
     this.setState({ progress: (this.cnt / this.sum) * 100 });
-  }, 100);
+  }, 500);
 
   analyzePort = (host, port = 8080) =>
     new Promise(resolve => {
       this.cnt += 1;
       this.setProgress();
+
       const socket = new net.Socket();
       socket.setTimeout(TIMEOUT, () => {
         // console.log('timeout...');
@@ -122,12 +117,10 @@ class Index extends React.Component {
       });
 
       socket.on('error', e => {
-        // console.log('ERROR: ', e.message);
         socket.destroy();
       });
 
       socket.on('close', () => {
-        // console.log(`Closed: ${port}`);
         socket.destroy();
       });
     }).catch(console.info);
@@ -169,19 +162,18 @@ class Index extends React.Component {
         console.info('ERROR:', e);
       })
       .finally(() => {
+        // eslint-disable-next-line no-console
         console.timeEnd('Scan Time');
         this.setState(state => ({
+          progress: 100,
           success: true,
           loading: false,
-          progress: '100',
         }));
       }); // <---- at most 10 http requests at a time
   };
 
   reset = () => {
-    // this.errorPorts = [];
-    // this.closePorts = [];
-    // this.timeoutPorts = [];
+    this.cnt = 0;
   };
 
   handleScanClick = () => {
@@ -196,10 +188,11 @@ class Index extends React.Component {
         loading: true,
         success: false,
         openPorts: [],
+        progress: 0,
       }),
       () => {
         const { host, start, end } = this.state;
-        this.scan(host, start, end);
+        this.scan(host, start, end).catch(console.error);
       },
     );
   };
@@ -235,6 +228,7 @@ class Index extends React.Component {
     const buttonClassname = classNames({
       [classes.buttonSuccess]: success,
     });
+
     return (
       <AppContent>
         <SimpleSnackbar
@@ -250,10 +244,9 @@ class Index extends React.Component {
             top: 0,
             left: 0,
             right: 0,
-            // backgroundColor: '#ccc',
           }}
         />
-        <div>
+        <div style={{ marginBottom: 16 }}>
           <h1
             style={{
               fontFamily: 'Product Sans, Roboto, sans-serif',
@@ -329,56 +322,34 @@ class Index extends React.Component {
             </Grid>
           </Grid>
         </div>
-        <div>{this.state.progress + '%'}</div>
-        {openPorts.length > 0 &&
-          // && openPorts.sort((a, b) => a - b)
-          !this.state.loading && (
-            <Paper
-              style={{ overflow: 'auto', marginBottom: 24, marginTop: 24 }}
-              elevation={1}
-            >
-              <List>
-                {openPorts.map(port => (
-                  <ListItem key={port} button>
-                    <ListItemIcon>
-                      <Open color="secondary" />
-                    </ListItemIcon>
-                    <ListItemText primary={`${this.state.host}:${port} Open`} />
-                  </ListItem>
-                ))}
-                {/* {closePorts.map(port => ( */}
-                {/* <ListItem key={port} button> */}
-                {/* <ListItemIcon> */}
-                {/* <Close /> */}
-                {/* </ListItemIcon> */}
-                {/* <ListItemText */}
-                {/* primary={`${this.state.host}:${port} Closed`} */}
-                {/* /> */}
-                {/* </ListItem> */}
-                {/* ))} */}
-                {/* {timeoutPorts.map(port => ( */}
-                {/* <ListItem key={port} button> */}
-                {/* <ListItemIcon> */}
-                {/* <Timeout /> */}
-                {/* </ListItemIcon> */}
-                {/* <ListItemText */}
-                {/* primary={`${this.state.host}:${port} TIMEOUT`} */}
-                {/* /> */}
-                {/* </ListItem> */}
-                {/* ))} */}
-                {/* {errorPorts.map(port => ( */}
-                {/* <ListItem key={port} button> */}
-                {/* <ListItemIcon> */}
-                {/* <Error /> */}
-                {/* </ListItemIcon> */}
-                {/* <ListItemText */}
-                {/* primary={`${this.state.host}:${port} ERROR`} */}
-                {/* /> */}
-                {/* </ListItem> */}
-                {/* ))} */}
-              </List>
-            </Paper>
-          )}
+        {this.state.loading ? (
+          <LinearDeterminate progress={this.state.progress} />
+        ) : (
+          openPorts.length > 0 &&
+          openPorts.sort((a, b) => a - b) && (
+            <>
+              <Typography variant="subtitle1" gutterBottom>
+                Open port(s): {openPorts.length}
+              </Typography>
+              <Paper
+                style={{ overflow: 'auto', marginBottom: 24 }}
+                elevation={1}
+              >
+                <List>
+                  {openPorts.map(port => (
+                    <ListItem key={port} button>
+                      <ListItemIcon>
+                        <Open color="secondary" />
+                      </ListItemIcon>
+                      <ListItemText primary={`Port: ${port}`} />
+                      <div>OPEN</div>
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
+            </>
+          )
+        )}
       </AppContent>
     );
   }
