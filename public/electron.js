@@ -4,6 +4,9 @@ const { app } = electron;
 const { BrowserWindow } = electron;
 const path = require('path');
 const isDev = require('electron-is-dev');
+const debug = require('electron-debug');
+
+debug();
 
 let mainWindow;
 //
