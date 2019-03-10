@@ -84,7 +84,7 @@ const getMenu = (app, shell) => {
         },
         {
           label: 'Toggle Full Screen',
-          accelerator: (function() {
+          accelerator: (() => {
             if (process.platform === 'darwin') return 'Ctrl+Command+F';
             return 'F11';
           })(),
@@ -95,7 +95,7 @@ const getMenu = (app, shell) => {
         },
         {
           label: 'Toggle Developer Tools',
-          accelerator: (function() {
+          accelerator: (() => {
             if (process.platform === 'darwin') return 'Alt+Command+I';
             return 'Ctrl+Shift+I';
           })(),
@@ -181,9 +181,7 @@ const getMenu = (app, shell) => {
         },
       ],
     });
-    const windowMenu = template.find(function(m) {
-      return m.role === 'window';
-    });
+    const windowMenu = template.find(m => m.role === 'window');
     if (windowMenu) {
       windowMenu.submenu.push(
         {
@@ -199,6 +197,7 @@ const getMenu = (app, shell) => {
 
   return template;
 };
+
 function createMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(getMenu(app, shell)));
 }
